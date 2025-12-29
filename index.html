@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N Studios - Kalkulator Produkcji Wideo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-black: #050505;
+            --bg-panel: #0a0a0a;
+            --text-white: #ffffff;
+            --text-gray: #a0a0a0;
+            --accent-gold: #d4af37;
+            --border-dark: #1a1a1a;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica', sans-serif;
+            background: var(--bg-black);
+            color: var(--text-white);
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 100vh;
+        }
+
+        /* LEFT SIDE - CINEMATIC IMAGE */
+        .hero-side {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+        }
+
+        .hero-side::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.6;
+            filter: grayscale(30%);
+        }
+
+        .hero-side::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to right, transparent 0%, var(--bg-black) 100%);
+        }
+
+        .logo {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            z-index: 10;
+            font-size: 48px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            color: var(--text-white);
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        /* RIGHT SIDE - CALCULATOR PANEL */
+        .panel-side {
+            background: var(--bg-panel);
+            padding: 60px 50px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .panel-header {
+            margin-bottom: 40px;
+        }
+
+        .panel-header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, var(--text-white) 0%, var(--text-gray) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .panel-header p {
+            color: var(--text-gray);
+            font-size: 14px;
+            font-weight: 300;
+        }
+
+        /* TAB SWITCHER */
+        .tab-switcher {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 40px;
+            background: var(--bg-black);
+            padding: 6px;
+            border-radius: 12px;
+            border: 1px solid var(--border-dark);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text-gray);
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .tab-btn.active {
+            background: var(--accent-gold);
+            color: var(--bg-black);
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-white);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* FORM SECTIONS */
+        .form-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-group {
+            margin-bottom: 32px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-gray);
+            margin-bottom: 12px;
+        }
+
+        /* SELECT INPUTS */
+        select {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 8px;
+            color: var(--text-white);
+            font-family: inherit;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23a0a0a0' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            padding-right: 50px;
+        }
+
+        select:hover,
+        select:focus {
+            border-color: var(--accent-gold);
+            outline: none;
+        }
+
+        /* RANGE SLIDER */
+        .slider-container {
+            padding: 10px 0;
+        }
+
+        .slider-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .slider-value span {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            background: var(--border-dark);
+            border-radius: 10px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--accent-gold);
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+            transition: var(--transition);
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #f0c040;
+            box-shadow: 0 0 0 8px rgba(212, 175, 55, 0.3);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: var(--accent-gold);
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.2);
+        }
+
+        /* RADIO BUTTONS */
+        .radio-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .radio-option {
+            flex: 1;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-option label {
+            display: block;
+            padding: 16px 20px;
+            background: var(--bg-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .radio-option input[type="radio"]:checked+label {
+            background: var(--accent-gold);
+            color: var(--bg-black);
+            border-color: var(--accent-gold);
+        }
+
+        .radio-option label:hover {
+            border-color: var(--accent-gold);
+        }
+
+        /* PRICING DISPLAY */
+        .pricing-display {
+            background: linear-gradient(135deg, var(--accent-gold) 0%, #b8941f 100%);
+            padding: 32px;
+            border-radius: 12px;
+            margin: 40px 0;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(212, 175, 55, 0.3);
+        }
+
+        .pricing-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(0, 0, 0, 0.7);
+            margin-bottom: 8px;
+        }
+
+        .pricing-amount {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--bg-black);
+            letter-spacing: -1px;
+        }
+
+        .pricing-currency {
+            font-size: 24px;
+            margin-left: 4px;
+        }
+
+        /* LEAD FORM */
+        .lead-form {
+            margin-top: 40px;
+        }
+
+        .lead-form h3 {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            color: var(--text-white);
+        }
+
+        input[type="text"],
+        input[type="tel"],
+        input[type="email"] {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg-black);
+            border: 1px solid var(--border-dark);
+            border-radius: 8px;
+            color: var(--text-white);
+            font-family: inherit;
+            font-size: 15px;
+            transition: var(--transition);
+            margin-bottom: 16px;
+        }
+
+        input[type="text"]:focus,
+        input[type="tel"]:focus,
+        input[type="email"]:focus {
+            border-color: var(--accent-gold);
+            outline: none;
+        }
+
+        input::placeholder {
+            color: var(--text-gray);
+        }
+
+        /* SUBMIT BUTTON */
+        .submit-btn {
+            width: 100%;
+            padding: 20px 40px;
+            background: var(--accent-gold);
+            color: var(--bg-black);
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .submit-btn:hover {
+            background: #f0c040;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(212, 175, 55, 0.5);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        /* SUCCESS MESSAGE */
+        .success-message {
+            display: none;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: 600;
+            animation: slideIn 0.5s ease;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-side {
+                min-height: 300px;
+            }
+
+            .logo {
+                top: 30px;
+                left: 30px;
+                font-size: 36px;
+            }
+
+            .panel-side {
+                padding: 40px 30px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .panel-side {
+                padding: 30px 20px;
+            }
+
+            .panel-header h1 {
+                font-size: 24px;
+            }
+
+            .pricing-amount {
+                font-size: 36px;
+            }
+
+            .radio-group {
+                flex-direction: column;
+            }
+
+            .tab-switcher {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- LEFT SIDE: CINEMATIC IMAGE -->
+        <div class="hero-side">
+            <div class="logo">N</div>
+        </div>
+
+        <!-- RIGHT SIDE: CALCULATOR PANEL -->
+        <div class="panel-side">
+            <div class="panel-header">
+                <h1>Kalkulator Produkcji</h1>
+                <p>Wybierz tryb i skonfiguruj swoją produkcję wideo</p>
+            </div>
+
+            <!-- TAB SWITCHER -->
+            <div class="tab-switcher">
+                <button class="tab-btn active" data-tab="traditional">TRADYCYJNE</button>
+                <button class="tab-btn" data-tab="ai">AI REKLAMA</button>
+            </div>
+
+            <!-- TRADITIONAL MODE FORM -->
+            <div class="form-section active" id="traditional-section">
+                <div class="form-group">
+                    <label class="form-label">Sprzęt</label>
+                    <select id="equipment">
+                        <option value="5000">Sony FX3</option>
+                        <option value="15000">ARRI Alexa</option>
+                        <option value="10000">RED Komodo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Studio</label>
+                    <select id="studio">
+                        <option value="0">Brak</option>
+                        <option value="3000">Cyklorama</option>
+                        <option value="8000">Ściana LED</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Długość wideo</label>
+                    <div class="slider-container">
+                        <div class="slider-value">
+                            <span id="length-value-trad">60</span>
+                            <span style="font-size: 14px; color: var(--text-gray);">sekund</span>
+                        </div>
+                        <input type="range" id="length-trad" min="15" max="120" value="60" step="1">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Złożoność</label>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="montage" name="complexity" value="2000" checked>
+                            <label for="montage">Montaż</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="vfx" name="complexity" value="5000">
+                            <label for="vfx">VFX</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="3d" name="complexity" value="8000">
+                            <label for="3d">3D</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI MODE FORM -->
+            <div class="form-section" id="ai-section">
+                <div class="form-group">
+                    <label class="form-label">Długość wideo</label>
+                    <div class="slider-container">
+                        <div class="slider-value">
+                            <span id="length-value-ai">60</span>
+                            <span style="font-size: 14px; color: var(--text-gray);">sekund</span>
+                        </div>
+                        <input type="range" id="length-ai" min="15" max="120" value="60" step="1">
+                    </div>
+                </div>
+
+                <div
+                    style="background: rgba(212, 175, 55, 0.1); padding: 20px; border-radius: 8px; border-left: 4px solid var(--accent-gold); margin-top: 20px;">
+                    <p style="font-size: 14px; color: var(--text-gray); line-height: 1.6;">
+                        <strong style="color: var(--accent-gold);">AI REKLAMA</strong> - Szybka, automatyczna produkcja
+                        wykorzystująca sztuczną inteligencję. Idealna dla treści social media i kampanii online.
+                    </p>
+                </div>
+            </div>
+
+            <!-- PRICING DISPLAY -->
+            <div class="pricing-display">
+                <div class="pricing-label">Szacowany Kosztorys</div>
+                <div class="pricing-amount">
+                    <span id="total-price">20000</span>
+                    <span class="pricing-currency">PLN</span>
+                </div>
+            </div>
+
+            <!-- LEAD FORM -->
+            <div class="lead-form">
+                <h3>Dane Kontaktowe</h3>
+                <input type="text" id="name" placeholder="Imię i nazwisko" required>
+                <input type="tel" id="phone" placeholder="Telefon" required>
+                <input type="email" id="email" placeholder="Email" required>
+
+                <button class="submit-btn" id="submit-btn">UMÓW WIZYTĘ</button>
+
+                <div class="success-message" id="success-message">
+                    ✓ Dziękujemy! Wkrótce się z Tobą skontaktujemy.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION
+        const WEBHOOK_URL = 'http://localhost:3000/api/submit';
+
+        // PRICING CONFIGURATION
+        const AI_PRICE_PER_SECOND = 100;
+
+        // STATE
+        let currentMode = 'traditional';
+
+        // ELEMENTS
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const traditionalSection = document.getElementById('traditional-section');
+        const aiSection = document.getElementById('ai-section');
+        const totalPriceElement = document.getElementById('total-price');
+
+        // TRADITIONAL MODE ELEMENTS
+        const equipmentSelect = document.getElementById('equipment');
+        const studioSelect = document.getElementById('studio');
+        const lengthTradSlider = document.getElementById('length-trad');
+        const lengthTradValue = document.getElementById('length-value-trad');
+        const complexityRadios = document.querySelectorAll('input[name="complexity"]');
+
+        // AI MODE ELEMENTS
+        const lengthAiSlider = document.getElementById('length-ai');
+        const lengthAiValue = document.getElementById('length-value-ai');
+
+        // LEAD FORM ELEMENTS
+        const submitBtn = document.getElementById('submit-btn');
+        const nameInput = document.getElementById('name');
+        const phoneInput = document.getElementById('phone');
+        const emailInput = document.getElementById('email');
+        const successMessage = document.getElementById('success-message');
+
+        // TAB SWITCHING
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tab;
+
+                // Update active tab button
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update active section
+                if (tab === 'traditional') {
+                    traditionalSection.classList.add('active');
+                    aiSection.classList.remove('active');
+                    currentMode = 'traditional';
+                } else {
+                    traditionalSection.classList.remove('active');
+                    aiSection.classList.add('active');
+                    currentMode = 'ai';
+                }
+
+                calculatePrice();
+            });
+        });
+
+        // CALCULATE PRICE
+        function calculatePrice() {
+            let totalPrice = 0;
+
+            if (currentMode === 'traditional') {
+                const equipment = parseInt(equipmentSelect.value);
+                const studio = parseInt(studioSelect.value);
+                const length = parseInt(lengthTradSlider.value);
+                const complexity = parseInt(document.querySelector('input[name="complexity"]:checked').value);
+
+                // Base calculation: equipment + studio + complexity + length bonus
+                totalPrice = equipment + studio + complexity + (length * 50);
+
+            } else if (currentMode === 'ai') {
+                const length = parseInt(lengthAiSlider.value);
+                totalPrice = length * AI_PRICE_PER_SECOND;
+            }
+
+            // Animate price change
+            animateValue(totalPriceElement, parseInt(totalPriceElement.textContent), totalPrice, 400);
+        }
+
+        // ANIMATE NUMBER
+        function animateValue(element, start, end, duration) {
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    clearInterval(timer);
+                    element.textContent = Math.round(end);
+                } else {
+                    element.textContent = Math.round(current);
+                }
+            }, 16);
+        }
+
+        // TRADITIONAL MODE LISTENERS
+        equipmentSelect.addEventListener('change', calculatePrice);
+        studioSelect.addEventListener('change', calculatePrice);
+        lengthTradSlider.addEventListener('input', (e) => {
+            lengthTradValue.textContent = e.target.value;
+            calculatePrice();
+        });
+        complexityRadios.forEach(radio => {
+            radio.addEventListener('change', calculatePrice);
+        });
+
+        // AI MODE LISTENERS
+        lengthAiSlider.addEventListener('input', (e) => {
+            lengthAiValue.textContent = e.target.value;
+            calculatePrice();
+        });
+
+        // FORM SUBMISSION
+        submitBtn.addEventListener('click', async () => {
+            const name = nameInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const email = emailInput.value.trim();
+
+            if (!name || !phone || !email) {
+                alert('Proszę wypełnić wszystkie pola kontaktowe');
+                return;
+            }
+
+            // Gather configuration data
+            const formData = {
+                mode: currentMode,
+                timestamp: new Date().toISOString(),
+                estimatedPrice: parseInt(totalPriceElement.textContent),
+                contact: {
+                    name: name,
+                    phone: phone,
+                    email: email
+                },
+                configuration: {}
+            };
+
+            if (currentMode === 'traditional') {
+                formData.configuration = {
+                    equipment: equipmentSelect.options[equipmentSelect.selectedIndex].text,
+                    studio: studioSelect.options[studioSelect.selectedIndex].text,
+                    length: parseInt(lengthTradSlider.value),
+                    complexity: document.querySelector('input[name="complexity"]:checked').nextElementSibling.textContent
+                };
+            } else {
+                formData.configuration = {
+                    length: parseInt(lengthAiSlider.value)
+                };
+            }
+
+            try {
+                // Send to webhook
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    // Show success message
+                    successMessage.classList.add('show');
+
+                    // Clear form
+                    nameInput.value = '';
+                    phoneInput.value = '';
+                    emailInput.value = '';
+
+                    // Hide success message after 5 seconds
+                    setTimeout(() => {
+                        successMessage.classList.remove('show');
+                    }, 5000);
+                } else {
+                    throw new Error('Network response was not ok');
+                }
+            } catch (error) {
+                console.error('Error sending data:', error);
+                console.log('Form data that would be sent:', formData);
+                alert('Wystąpił błąd podczas wysyłania formularza. Dane zostały zapisane w konsoli.');
+            }
+        });
+
+        // INITIAL CALCULATION
+        calculatePrice();
+    </script>
+</body>
+
+</html>
